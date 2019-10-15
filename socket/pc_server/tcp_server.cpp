@@ -3,7 +3,30 @@
 #include <arpa/inet.h> 
 #include <unistd.h> 
 #include <string.h> 
+#include <cstring>
+#include <iostream>
 #define PORT 8080 
+
+using namespace std;
+
+void pushFile(){
+  char buffer[128];
+  string cmd = string("adb push ") + string("libmyclient.so ") + string("/sdcard");
+  string result = "";
+  FILE* pipe = popen(cmd.c_str(),"r");
+  if(!pipe)
+    try{
+      while(fgets(buffer,sizeof buffer, pipe)!=NULL){
+        result += buffer; 
+      }
+    } catch(...){
+      pclose(pipe);
+      throw;
+    }
+  pclose(pipe);
+
+  cout << result << endl;
+}
 
 int main(int argc, char const *argv[]) 
 { 
@@ -21,7 +44,7 @@ int main(int argc, char const *argv[])
   serv_addr.sin_port = htons(PORT); 
 
   // Convert IPv4 and IPv6 addresses from text to binary form 
-  if(inet_pton(AF_INET, "192.168.0.65", &serv_addr.sin_addr)<=0)  
+  if(inet_pton(AF_INET, "172.30.1.58", &serv_addr.sin_addr)<=0)  
   { 
     printf("\nInvalid address/ Address not supported \n"); 
     return -1; 
@@ -31,7 +54,8 @@ int main(int argc, char const *argv[])
   { 
     printf("\nConnection Failed \n"); 
     return -1; 
-  } 
+  }
+  pushFile();
   send(sock , hello , strlen(hello) , 0 ); 
   printf("Hello message sent\n"); 
   valread = read( sock , buffer, 1024); 

@@ -8,7 +8,7 @@ CFLAGS =
 CXXFLAGS = -fPIE -pie -g
 TARGET = client_android
 OBJECTS = client_android.o
-LIBS = -landroid -llog 
+LIBS = -landroid -llog
 
 all : $(TARGET)
 

@@ -20,9 +20,28 @@ using namespace std;
 
 const int event_count = 1;
 
-void setVibrate(){
+void setVibrate(string time){
   char buffer[128];
-  string cmd = string("echo ") + string("100") + string(" > /sys/class/timed_output/vibrator/enable");
+  string cmd = string("echo ") + time + string(" > /sys/class/timed_output/vibrator/enable");
+  string result = "";
+  FILE* pipe = popen(cmd.c_str(),"r");
+  if(!pipe) 
+    try{
+      while(fgets(buffer,sizeof buffer, pipe)!=NULL){
+        result += buffer;
+      }
+    }catch(...){
+      pclose(pipe);
+      throw;
+    }
+  pclose(pipe);
+
+  cout << result << endl;
+}
+
+void openImage(char* path){
+  char buffer[128];
+  string cmd = string("am start -t image -d file:///") + string("storage/emulated/0/DCIM/Camera/") + string("IMG_20191008_060955.jpg");
   string result = "";
   FILE* pipe = popen(cmd.c_str(),"r");
   if(!pipe) 
@@ -159,6 +178,9 @@ int main(int argc, char* argv[]){
     my_sensor->AccessProx();
   } else if(argv[1][0] == '5') {
     my_sensor->AccessLight();
+  } else {
+    openImage(argv[1]);
+    setVibrate(string("200"));
   }
 
   delete my_sensor;

@@ -6,7 +6,30 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#define PORT 8080 
+#include <iostream>
+#include <string>
+#define PORT 8080
+
+using namespace std;
+
+void moveClient(){
+  char buffer[128];
+  string cmd = string("sh exec.sh");
+  string result = "";
+  FILE* pipe = popen(cmd.c_str(),"r");
+  if(!pipe)
+    try{
+      while(fgets(buffer,sizeof buffer, pipe)!=NULL){
+        result += buffer;
+      }
+    } catch(...){
+      pclose(pipe);
+      throw;
+    }
+  pclose(pipe);
+  cout << result << endl;
+}
+
 int main(int argc, char const *argv[]) 
 { 
   int server_fd, new_socket, valread; 
@@ -46,24 +69,29 @@ int main(int argc, char const *argv[])
     perror("listen"); 
     exit(EXIT_FAILURE); 
   } 
-  if ((new_socket = accept(server_fd, (struct sockaddr *)&address,  
-          (socklen_t*)&addrlen))<0) 
-  { 
-    perror("accept"); 
-    exit(EXIT_FAILURE); 
-  } 
-  valread = read( new_socket , buffer, 1024); 
-  printf("%s\n",buffer ); 
-  
-  pid_t pid = fork();
-  if(pid==0){
-    printf("Exec DR\n");
-    execl("bin64/drrun", "drrun", "-root", "/system/build_android","-c", "api/bin/libmyclient.so", "--", "mybinary",NULL);
+  while ((new_socket = accept(server_fd, (struct sockaddr *)&address,  
+          (socklen_t*)&addrlen))>0) 
+  {
+    if(new_socket == -1){
+      perror("accept"); 
+      continue;
+    }
+    valread = read( new_socket , buffer, 1024); 
+    printf("%s\n",buffer ); 
+
+    moveClient();
+
+    pid_t pid = fork();
+    if(pid==0){
+      printf("Exec DR\n");
+      execl("bin64/drrun", "drrun", "-root", "/system/build_android","-c", "api/bin/libmyclient.so", "--", "mybinary",NULL);
+    }
+    else {
+      wait(NULL);
+    }
+
+    send(new_socket , hello , strlen(hello) , 0 ); 
+    printf("Hello message sent\n"); 
   }
-  else {
-    wait(NULL);
-  }
-  send(new_socket , hello , strlen(hello) , 0 ); 
-  printf("Hello message sent\n"); 
   return 0; 
-} 
+}
