@@ -122,7 +122,6 @@ void wrap_pre_light(void *wrapcxt, OUT void **user_data){
 	}
 };
 
-
 void wrap_pre_image(void *wrapcxt, OUT void **user_data){
   dr_printf("Running wrap pre image\n");
 
@@ -130,12 +129,12 @@ void wrap_pre_image(void *wrapcxt, OUT void **user_data){
   if(pid==0){
     dr_printf("Child Process\n");
     execl("/system/build_android/client_android", "client_android", "6", NULL);
-
-  } else {
+  }
+	else {
     wait(NULL);
     dr_printf("Parent Process\n");
   }
-}
+};
 
 void wrap_post(void *wrapcxt, OUT void *user_data){
 	dr_printf("Running wrap post\n");
@@ -148,20 +147,21 @@ void module_load_event(void *drcontext, const module_data_t *mod, bool loaded){
   char func_mag[10]="AccessMag";
   char func_prox[11]="AccessProx";
   char func_light[12]="AccessLight";
-  char func_image[12]="AccessImage";
+  char func_image[13]="AccessImage";
 
 	app_pc origin;
 	size_t offs;
 
   bool wrapped = true;
   
-  if(drsym_lookup_symbol(mod->full_path, func_all,&offs, DRSYM_DEMANGE)==DRSYM_SUCCESS){
+  if(drsym_lookup_symbol(mod->full_path, func_all,&offs, DRSYM_DEMANGLE)==DRSYM_SUCCESS){
     origin = offs + mod->start;
     wrapped = drwrap_wrap(origin,wrap_pre,wrap_post);
   }
   else if(drsym_lookup_symbol(mod->full_path, func_acc, &offs, DRSYM_DEMANGLE) == DRSYM_SUCCESS){
     origin = offs + mod->start;
-    wrapped = drwrap_wrap(origin,wrap_pre_acc,wrap_post);
+   // wrapped = drwrap_wrap(origin,wrap_pre_acc,wrap_post);
+    wrapped = drwrap_wrap(origin,wrap_pre_image,wrap_post);
   }
   else if(drsym_lookup_symbol(mod->full_path, func_gyro, &offs, DRSYM_DEMANGLE) == DRSYM_SUCCESS){
     origin = offs + mod->start;
@@ -181,7 +181,7 @@ void module_load_event(void *drcontext, const module_data_t *mod, bool loaded){
   }
   else if(drsym_lookup_symbol(mod->full_path, func_image, &offs, DRSYM_DEMANGLE)==DRSYM_SUCCESS){
     origin = offs + mod->start;
-    wrapped = drwap_wrap(origin,wrap_pre_image,wrap_post);
+    wrapped = drwrap_wrap(origin,wrap_pre_image,wrap_post);
   }
 }
 
