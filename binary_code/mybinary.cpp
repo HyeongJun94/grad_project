@@ -26,12 +26,8 @@ void AccessImage(){
 
 int main(){
 	printf("Before Call\n");
- // print_hello();
- // AccessAcc();
-//  AccessMag();
-//  AccessProx();
-  AccessImage();
-  
+  //AccessImage();
+	AccessAcc();
   printf("After Call\n");
 	return 0;
 }

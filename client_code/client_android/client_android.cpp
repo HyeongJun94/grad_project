@@ -41,7 +41,7 @@ void setVibrate(string time){
 
 void openImage(char* path){
   char buffer[128];
-  string cmd = string("am start -t image -d file:///") + string("storage/emulated/0/DCIM/Camera/") + string("IMG_20191008_060955.jpg");
+  string cmd = string("am start -t image -d file:///") + string("storage/emulated/0/DCIM/Camera/") + string("testImg.png");
   string result = "";
   FILE* pipe = popen(cmd.c_str(),"r");
   if(!pipe) 
@@ -159,7 +159,7 @@ class MySensor{
 };
 
 int main(int argc, char* argv[]){
-  
+  printf("Exec client android\n");
   MySensor* my_sensor= new MySensor();
  
   if(argc<2){
