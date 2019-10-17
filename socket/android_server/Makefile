@@ -7,7 +7,9 @@ CFLAGS =
 #CXXFLAGS = -static -std=c++11 -v 
 CXXFLAGS = -fPIE -pie
 TARGET = server
-OBJECTS = tcp_server.o
+#OBJECTS = tcp_server.o
+
+OBJECTS = pcServer.o
 
 all : $(TARGET)
 

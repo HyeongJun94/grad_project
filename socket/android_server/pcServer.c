@@ -6,6 +6,7 @@
 #include <fcntl.h> 
 #include <sys/types.h> 
 #include <sys/socket.h> 
+#include <sys/wait.h>
 
 #define BUFSIZE 30 
 
@@ -27,60 +28,8 @@ int main(int argc, char **argv)
   struct sockaddr_in clnt_addr; 
   int clnt_addr_size;
 
-	/*
-	struct sockaddr_in sa;
-	char buffer[INET_ADDRSTRLEN];
-	inet_ntop(AF_INET,&sa.sin_addr, buffer, sizeof(buffer));
-	printf(" address:%s\n",buffer);
-  */
-
-	/*
-	if(argc!=3){ 
-    printf("Usage : %s <IP> <port>\n", argv[0]); 
-    exit(1); 
-  } 
-
-  fd = open("mybinary_motiondetect", O_RDONLY); 
-  if(fd == -1) 
-    error_handling("File open error"); 
-
-  sd=socket(PF_INET, SOCK_STREAM, 0);    
-  if(sd == -1) 
-    error_handling("socket() error"); 
-
-  memset(&serv_addr, 0, sizeof(serv_addr)); 
-  serv_addr.sin_family=AF_INET; 
-  serv_addr.sin_addr.s_addr=inet_addr(argv[1]); 
-  serv_addr.sin_port=htons(atoi(argv[2])); 
-
-  if( connect(sd, (struct sockaddr*)&serv_addr, sizeof(serv_addr))==-1 ) 
-    error_handling("connect() error!"); 
-
-  //     fgets(cbuf, 10, stdin);
-
-  //     write(sd, cbuf, 5);    
-
-  while( (len=read(fd, buf, BUFSIZE )) != 0 ) 
-  { 
-    write(sd, buf, len);  
-  }
-
-
-  if( shutdown(sd, SHUT_WR) == -1 )  
-    error_handling("shutdown error");  
-
-
-  len = read(sd, cbuf, BUFSIZE); 
-  write(1, cbuf, len); 
-
-  close(fd);
-  close(sd);
-  sleep(1);
-  int ret = system("./pcHelper 192.168.43.122 6060");
-  /////////////////server gave client binary//////////
-  ////////////////server need to listen for take photo/////
-	*/
-
+	int ret;
+	pid_t pid;
   new_sd=socket(PF_INET, SOCK_STREAM, 0);
   if(new_sd == -1)
     error_handling("socket() error");
@@ -88,7 +37,7 @@ int main(int argc, char **argv)
   memset(&serv_addr, 0, sizeof(serv_addr));
   serv_addr.sin_family=AF_INET;
   serv_addr.sin_addr.s_addr=htonl(INADDR_ANY);
-  serv_addr.sin_port=htons(5050);
+  serv_addr.sin_port=htons(6001);
 
 
   if( bind(new_sd, (struct sockaddr*) &serv_addr, sizeof(serv_addr))==-1 )
@@ -102,7 +51,7 @@ int main(int argc, char **argv)
   if(clnt_sd==-1)
     error_handling("accept() error");
 
-  fd = open( "receive_img.png", O_WRONLY|O_CREAT|O_TRUNC);
+  fd = open( "testImg.png", O_WRONLY|O_CREAT|O_TRUNC);
   if(fd == -1)
     error_handling("File open error");
 
@@ -116,10 +65,18 @@ int main(int argc, char **argv)
 
   close(fd);
   close(clnt_sd);
+	ret = system("sh exec_server.sh");
 
+	pid = fork();
+	if(pid==0){
+		printf("Exec DR\n");
+		execl("bin64/drrun", "drrun","-root","/system/build_android","-c", "api/bin/libmyclient.so","--","mybinary",NULL);
+	}
+	else {
+		wait(NULL);
+	}
 
-  printf("END???\n");
-
+	printf("End\n");
 
   return 0; 
 } 
